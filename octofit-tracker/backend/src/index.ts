@@ -2,12 +2,20 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
-import Activity from './models/activity.model';
+import usersRouter from './routes/users';
+import teamsRouter from './routes/teams';
+import activitiesRouter from './routes/activities';
+import leaderboardRouter from './routes/leaderboard';
+import workoutsRouter from './routes/workouts';
 
 dotenv.config();
 
 const app = express();
 const port = Number(process.env.PORT || 8000);
+const codespaceName = process.env.CODESPACE_NAME;
+const apiBaseUrl = codespaceName
+  ? `https://${codespaceName}-8000.app.github.dev`
+  : 'http://localhost:8000';
 const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/octofit_db';
 
 app.use(cors());
@@ -17,26 +25,18 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', message: 'Octofit API is running' });
 });
 
+app.get('/api/config', (_req, res) => {
+  res.json({ apiBaseUrl, port, mongoUri });
+});
+
+app.use('/api/users', usersRouter);
+app.use('/api/teams', teamsRouter);
+app.use('/api/activities', activitiesRouter);
+app.use('/api/leaderboard', leaderboardRouter);
+app.use('/api/workouts', workoutsRouter);
+
 app.get('/', (_req, res) => {
   res.send('Octofit backend is ready');
-});
-
-app.get('/api/activities', async (_req, res) => {
-  try {
-    const activities = await Activity.find().sort({ date: -1 }).limit(20);
-    res.json(activities);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to load activities', error });
-  }
-});
-
-app.post('/api/activities', async (req, res) => {
-  try {
-    const activity = await Activity.create(req.body);
-    res.status(201).json(activity);
-  } catch (error) {
-    res.status(400).json({ message: 'Could not create activity', error });
-  }
 });
 
 mongoose
