@@ -1,0 +1,12 @@
+body {
+  background: linear-gradient(135deg, #f7f9fc 0%, #eef4ff 100%);
+}
+
+.card {
+  border: 0;
+  border-radius: 1rem;
+}
+
+.text-primary {
+  color: #2563eb !important;
+}
